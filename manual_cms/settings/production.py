@@ -6,8 +6,13 @@ from .base import *
 
 DEBUG = False
 
-# Hosts permitidos - cambiar por tu dominio real
-ALLOWED_HOSTS = ['*']  # En producción, especifica tu dominio
+# Hosts permitidos para Render
+ALLOWED_HOSTS = [
+    'manualogos360.onrender.com',
+    '*.onrender.com',
+    'localhost',
+    '127.0.0.1'
+]
 
 # Middleware con WhiteNoise para archivos estáticos
 MIDDLEWARE = [
@@ -65,6 +70,9 @@ if 'EMAIL_HOST' in os.environ:
 
 # Secret key desde variable de entorno
 SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-change-me-in-production')
+
+# Base URL de Wagtail para producción
+WAGTAILADMIN_BASE_URL = 'https://manualogos360.onrender.com'
 
 # Logging básico
 LOGGING = {
