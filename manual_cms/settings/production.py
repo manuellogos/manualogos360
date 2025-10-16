@@ -35,14 +35,11 @@ DATABASES = {
     )
 }
 
-# Archivos estáticos para producción
+# Archivos estáticos para producción  
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
-# ManifestStaticFilesStorage is recommended in production, to prevent
-# outdated JavaScript / CSS assets being served from cache
-# (e.g. after a Wagtail upgrade).
-# See https://docs.djangoproject.com/en/5.2/ref/contrib/staticfiles/#manifeststaticfilesstorage
-STORAGES["staticfiles"]["BACKEND"] = "django.contrib.staticfiles.storage.ManifestStaticFilesStorage"
+# Usar WhiteNoise para servir archivos estáticos sin manifest estricto
+STORAGES["staticfiles"]["BACKEND"] = "whitenoise.storage.CompressedStaticFilesStorage"
 
 # Configuración de seguridad
 SECURE_BROWSER_XSS_FILTER = True
