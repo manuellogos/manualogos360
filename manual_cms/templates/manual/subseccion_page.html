@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% load wagtailcore_tags i18n %}
+
+{% block body_class %}subseccion-page{% endblock %}
+
+{% block content %}
+    <div class="page-header">
+        <h1>{{ page.title }}</h1>
+        {% if page.descripcion %}
+            <div class="page-description">
+                {{ page.descripcion|richtext }}
+            </div>
+        {% endif %}
+    </div>
+
+    <div class="articles-grid">
+        {% for article in page.get_children.live %}
+            <div class="article-card">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <i class="fas fa-file-text"></i>
+                            {{ article.title }}
+                        </h5>
+                        {% if article.search_description %}
+                            <p class="card-text">{{ article.search_description }}</p>
+                        {% endif %}
+                    </div>
+                    <div class="card-footer">
+                        <a href="{{ article.url }}" class="btn btn-outline-primary">
+                            {% trans "Leer artículo" %}
+                            <i class="fas fa-arrow-right"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        {% empty %}
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle"></i>
+                {% trans "Esta subsección aún no tiene artículos." %}
+            </div>
+        {% endfor %}
+    </div>
+{% endblock %}

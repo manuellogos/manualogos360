@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% load wagtailcore_tags i18n %}
+
+{% block body_class %}seccion-page{% endblock %}
+
+{% block content %}
+    <div class="page-header">
+        <h1>
+            {% if page.icono %}
+                <i class="fas {{ page.icono }}"></i>
+            {% endif %}
+            {{ page.title }}
+        </h1>
+        {% if page.descripcion %}
+            <div class="page-description">
+                {{ page.descripcion|richtext }}
+            </div>
+        {% endif %}
+    </div>
+
+    <div class="subsections-articles">
+        {% for child in page.get_children.live %}
+            {% if child.specific_class.get_verbose_name == 'Subsección' %}
+                <div class="subsection-block">
+                    <h3>
+                        <a href="{{ child.url }}">{{ child.title }}</a>
+                    </h3>
+                    {% if child.specific.descripcion %}
+                        <p>{{ child.specific.descripcion|richtext }}</p>
+                    {% endif %}
+                    
+                    <div class="articles-list">
+                        {% for article in child.get_children.live %}
+                            <div class="article-item">
+                                <a href="{{ article.url }}" class="article-link">
+                                    <i class="fas fa-file-text"></i>
+                                    {{ article.title }}
+                                </a>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% elif child.specific_class.get_verbose_name == 'Artículo' %}
+                <div class="article-item direct">
+                    <a href="{{ child.url }}" class="article-link">
+                        <i class="fas fa-file-text"></i>
+                        {{ child.title }}
+                    </a>
+                </div>
+            {% endif %}
+        {% empty %}
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle"></i>
+                {% trans "Esta sección aún no tiene contenido." %}
+            </div>
+        {% endfor %}
+    </div>
+{% endblock %}

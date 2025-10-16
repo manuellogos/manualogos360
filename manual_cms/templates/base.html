@@ -1,0 +1,207 @@
+{% load static wagtailcore_tags wagtailuserbar i18n %}
+
+<!DOCTYPE html>
+<html lang="{{ LANGUAGE_CODE }}">
+<head>
+    <meta charset="utf-8">
+    <title>
+        {% block title %}
+            {% if page.seo_title %}{{ page.seo_title }}{% else %}{{ page.title }}{% endif %}
+        {% endblock %}
+        {% block title_suffix %}
+            {% wagtail_site as current_site %}
+            {% if current_site and current_site.site_name %} - {{ current_site.site_name }}{% endif %}
+        {% endblock %}
+    </title>
+    {% if page.search_description %}
+        <meta name="description" content="{{ page.search_description }}">
+    {% endif %}
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+    {# Force all links in the live preview panel to be opened in a new tab #}
+    {% if request.in_preview_panel %}
+    <base target="_blank">
+    {% endif %}
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="{% static 'img/favicon.png' %}">
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Prism.js para syntax highlighting -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" rel="stylesheet">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" type="text/css" href="{% static 'css/manual.css' %}">
+    
+    {% block extra_css %}
+        {# Override this in templates to add extra stylesheets #}
+    {% endblock %}
+</head>
+
+<body class="{% block body_class %}{% endblock %}">
+    {% wagtailuserbar %}
+
+    <!-- Language Switcher -->
+    <div class="language-switcher">
+        {% get_available_languages as languages %}
+        {% get_current_language as LANGUAGE_CODE %}
+        {% if languages|length > 1 %}
+            <div class="dropdown">
+                <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                    <i class="fas fa-globe"></i> 
+                    {% for code, name in languages %}
+                        {% if code == LANGUAGE_CODE %}{{ name }}{% endif %}
+                    {% endfor %}
+                </button>
+                <ul class="dropdown-menu">
+                    {% for code, name in languages %}
+                        {% if code != LANGUAGE_CODE %}
+                            <li>
+                                <a class="dropdown-item" href="javascript:void(0)" onclick="switchLanguage('{{ code }}')">{{ name }}</a>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endif %}
+    </div>
+
+    <div class="manual-container">
+        <!-- Sidebar -->
+        <nav class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h3>
+                    <i class="fas fa-book"></i>
+                    {% trans "Manual de Usuario" %}
+                </h3>
+                <button class="btn btn-link d-md-none" id="sidebarToggle">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+            
+            <div class="sidebar-content">
+                {% block sidebar %}
+                    {% if manual_home %}
+                        <div class="nav-section">
+                            <a href="{{ manual_home.url }}" class="nav-link {% if page == manual_home %}active{% endif %}">
+                                <i class="fas fa-home"></i>
+                                {{ manual_home.title }}
+                            </a>
+                        </div>
+                        
+                        {% for section in manual_sections %}
+                            <div class="nav-section">
+                                <a href="{{ section.url }}" class="nav-link {% if page == section %}active{% elif page.get_ancestors and section in page.get_ancestors %}active{% endif %}">
+                                    {% if section.specific.icono %}
+                                        <i class="fas {{ section.specific.icono }}"></i>
+                                    {% else %}
+                                        <i class="fas fa-folder"></i>
+                                    {% endif %}
+                                    {{ section.title }}
+                                </a>
+                                
+                                {% for child in section.get_children.live %}
+                                    {% if child.specific_class.get_verbose_name == 'Subsección' %}
+                                        <div class="nav-subsection">
+                                            <a href="{{ child.url }}" class="nav-link {% if page == child %}active{% elif page.get_ancestors and child in page.get_ancestors %}active{% endif %}">
+                                                <i class="fas fa-folder-open"></i>
+                                                {{ child.title }}
+                                            </a>
+                                            {% for article in child.get_children.live %}
+                                                <div class="nav-article">
+                                                    <a href="{{ article.url }}" class="nav-link {% if page == article %}active{% endif %}">
+                                                        <i class="fas fa-file-text"></i>
+                                                        {{ article.title }}
+                                                    </a>
+                                                </div>
+                                            {% endfor %}
+                                        </div>
+                                    {% else %}
+                                        <!-- Artículos directos en la sección -->
+                                        <div class="nav-article">
+                                            <a href="{{ child.url }}" class="nav-link {% if page == child %}active{% endif %}">
+                                                <i class="fas fa-file-text"></i>
+                                                {{ child.title }}
+                                            </a>
+                                        </div>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                {% endblock %}
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="content-wrapper">
+                {% block breadcrumb %}
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            {% for ancestor in page.get_ancestors %}
+                                {% if not ancestor.is_root %}
+                                    <li class="breadcrumb-item">
+                                        <a href="{{ ancestor.url }}">{{ ancestor.title }}</a>
+                                    </li>
+                                {% endif %}
+                            {% endfor %}
+                            <li class="breadcrumb-item active" aria-current="page">{{ page.title }}</li>
+                        </ol>
+                    </nav>
+                {% endblock %}
+
+                {% block content %}{% endblock %}
+
+                {% block navigation %}
+                    {% if page.specific_class.get_verbose_name == 'Artículo' %}
+                        <nav class="article-navigation">
+                            <div class="row">
+                                <div class="col-6">
+                                    {% with page.specific.get_previous_article as prev %}
+                                        {% if prev %}
+                                            <a href="{{ prev.url }}" class="btn btn-outline-primary">
+                                                <i class="fas fa-chevron-left"></i>
+                                                {% trans "Anterior" %}: {{ prev.title }}
+                                            </a>
+                                        {% endif %}
+                                    {% endwith %}
+                                </div>
+                                <div class="col-6 text-end">
+                                    {% with page.specific.get_next_article as next %}
+                                        {% if next %}
+                                            <a href="{{ next.url }}" class="btn btn-outline-primary">
+                                                {% trans "Siguiente" %}: {{ next.title }}
+                                                <i class="fas fa-chevron-right"></i>
+                                            </a>
+                                        {% endif %}
+                                    {% endwith %}
+                                </div>
+                            </div>
+                        </nav>
+                    {% endif %}
+                {% endblock %}
+            </div>
+        </main>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Prism.js para syntax highlighting -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+    
+    <!-- Custom JS -->
+    <script src="{% static 'js/manual.js' %}"></script>
+
+    {% block extra_js %}
+        {# Override this in templates to add extra javascript #}
+    {% endblock %}
+</body>
+</html>

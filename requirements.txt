@@ -1,0 +1,20 @@
+Django>=5.2,<5.3
+wagtail>=7.1,<7.2
+wagtail-localize>=1.12,<2.0
+
+# Base de datos
+psycopg2-binary>=2.9,<3.0
+dj-database-url>=2.1,<3.0
+
+# Archivos estáticos
+whitenoise>=6.5,<7.0
+
+# Imágenes
+Pillow>=10.0,<11.0
+pillow-heif>=1.1,<2.0
+
+# Servidor web
+gunicorn>=21.0,<22.0
+
+# Otros
+requests>=2.31,<3.0

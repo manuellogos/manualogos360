@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% load wagtailcore_tags wagtailimages_tags i18n %}
+
+{% block body_class %}manual-home{% endblock %}
+
+{% block content %}
+    <div class="manual-hero">
+        {% if page.hero_image %}
+            <div class="hero-image mb-4">
+                {% image page.hero_image width-800 as hero_img %}
+                <img src="{{ hero_img.url }}" alt="{{ page.hero_image.title|default:page.title }}" class="img-fluid rounded shadow">
+            </div>
+        {% endif %}
+        
+        <h1 class="display-4">{{ page.title }}</h1>
+        {% if page.intro %}
+            <div class="lead">
+                {{ page.intro|richtext }}
+            </div>
+        {% endif %}
+    </div>
+
+    <div class="sections-grid">
+        {% for section in page.get_children.live %}
+            <div class="section-card">
+                <div class="card h-100">
+                    {% if section.specific.imagen_seccion %}
+                        <div class="card-img-top-container">
+                            {% image section.specific.imagen_seccion width-400 height-200 as section_img %}
+                            <img src="{{ section_img.url }}" alt="{{ section.specific.imagen_seccion.title|default:section.title }}" class="card-img-top">
+                        </div>
+                    {% endif %}
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            {% if section.specific.icono %}
+                                <i class="fas {{ section.specific.icono }}"></i>
+                            {% else %}
+                                <i class="fas fa-folder"></i>
+                            {% endif %}
+                            {{ section.title }}
+                        </h5>
+                        {% if section.specific.descripcion %}
+                            <p class="card-text">{{ section.specific.descripcion|richtext }}</p>
+                        {% endif %}
+                        <div class="articles-count">
+                            {% with section.get_descendants.live.count as count %}
+                                <small class="text-muted">
+                                    {{ count }} {% if count == 1 %}{% trans "artículo" %}{% else %}{% trans "artículos" %}{% endif %}
+                                </small>
+                            {% endwith %}
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <a href="{{ section.url }}" class="btn btn-primary">
+                            {% trans "Ver sección" %}
+                            <i class="fas fa-arrow-right"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% endblock %}
