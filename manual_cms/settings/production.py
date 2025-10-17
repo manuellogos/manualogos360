@@ -36,10 +36,24 @@ DATABASES = {
 }
 
 # Archivos estáticos para producción  
+STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
-# Usar WhiteNoise para servir archivos estáticos sin manifest estricto
-STORAGES["staticfiles"]["BACKEND"] = "whitenoise.storage.CompressedStaticFilesStorage"
+# Configuración mejorada para WhiteNoise
+STORAGES = {
+    "default": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+    },
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    },
+}
+
+# Configuración adicional para archivos estáticos
+STATICFILES_FINDERS = [
+    "django.contrib.staticfiles.finders.FileSystemFinder",
+    "django.contrib.staticfiles.finders.AppDirectoriesFinder",
+]
 
 # Configuración de seguridad
 SECURE_BROWSER_XSS_FILTER = True
