@@ -1,5 +1,6 @@
 from django.core.management.base import BaseCommand
 from wagtail.models import Site
+
 from manual.models import ManualHomePage
 
 

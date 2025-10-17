@@ -1,5 +1,7 @@
 import os
+
 import dj_database_url
+
 from .base import *
 
 DEBUG = False
@@ -27,11 +29,19 @@ MIDDLEWARE = [
 ]
 
 # Base de datos para producción (PostgreSQL)
-DATABASES = {
-    'default': dj_database_url.parse(
-        os.environ.get('DATABASE_URL', 'sqlite:///db.sqlite3')
-    )
-}
+database_url = os.environ.get('DATABASE_URL', '')
+if database_url and database_url != '://' and '://' in database_url:
+    DATABASES = {
+        'default': dj_database_url.parse(database_url)
+    }
+else:
+    # Fallback a SQLite si DATABASE_URL no está configurada correctamente
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        }
+    }
 
 # Archivos estáticos - Configuración con WhiteNoise
 STATIC_URL = '/static/'
