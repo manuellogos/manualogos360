@@ -69,6 +69,9 @@ WHITENOISE_AUTOREFRESH = False
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
+# WhiteNoise configuration for serving media files in production
+WHITENOISE_MAX_AGE = 31536000  # 1 year cache for static files
+
 # Secret key desde variable de entorno
 SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-change-me-in-production')
 

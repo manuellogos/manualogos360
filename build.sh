@@ -6,8 +6,9 @@ set -o errexit  # Salir si hay errores
 echo "🔧 Instalando dependencias..."
 pip install -r requirements.txt
 
-echo "📁 Creando directorio de archivos estáticos..."
+echo "📁 Creando directorios necesarios..."
 mkdir -p staticfiles
+mkdir -p media
 
 echo "�️ Ejecutando migraciones..."
 python manage.py migrate
