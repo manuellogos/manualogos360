@@ -1,7 +1,5 @@
 import os
-
 import dj_database_url
-
 from .base import *
 
 DEBUG = False
@@ -35,49 +33,31 @@ DATABASES = {
     )
 }
 
-# Archivos estáticos para producción  
+# Archivos estáticos - Configuración con WhiteNoise
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
-# Configuración simple para WhiteNoise (sin manifest que causa errores)
+# Prefer using STORAGES (Django 4.2+) so it overrides base.STORAGES safely.
+# Avoid Manifest storage in production until the collectstatic output is stable,
+# because missing manifest entries raise runtime errors (we saw favicon errors).
+# Use WhiteNoise's compressed storage (no manifest) so files are served from
+# STATIC_ROOT without manifest enforcement.
 STORAGES = {
-    "default": {
-        "BACKEND": "django.core.files.storage.FileSystemStorage",
+    'default': {
+        'BACKEND': 'django.core.files.storage.FileSystemStorage',
     },
-    "staticfiles": {
-        "BACKEND": "whitenoise.storage.CompressedStaticFilesStorage",
+    'staticfiles': {
+        'BACKEND': 'whitenoise.storage.CompressedStaticFilesStorage',
     },
 }
 
-# Configuración adicional para archivos estáticos
-STATICFILES_FINDERS = [
-    "django.contrib.staticfiles.finders.FileSystemFinder",
-    "django.contrib.staticfiles.finders.AppDirectoriesFinder",
-]
-
-# Configuración de seguridad
-SECURE_BROWSER_XSS_FILTER = True
-SECURE_CONTENT_TYPE_NOSNIFF = True
-X_FRAME_OPTIONS = 'DENY'
-
-# HTTPS settings (descomenta si usas HTTPS)
-# SECURE_SSL_REDIRECT = True
-# SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-# SESSION_COOKIE_SECURE = True
-# CSRF_COOKIE_SECURE = True
+# WhiteNoise runtime options - disable autoreload in production
+WHITENOISE_USE_FINDERS = False
+WHITENOISE_AUTOREFRESH = False
 
 # Archivos de media (imágenes subidas)
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-
-# Configuración de email (opcional)
-if 'EMAIL_HOST' in os.environ:
-    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-    EMAIL_HOST = os.environ['EMAIL_HOST']
-    EMAIL_PORT = int(os.environ.get('EMAIL_PORT', 587))
-    EMAIL_USE_TLS = True
-    EMAIL_HOST_USER = os.environ['EMAIL_HOST_USER']
-    EMAIL_HOST_PASSWORD = os.environ['EMAIL_HOST_PASSWORD']
 
 # Secret key desde variable de entorno
 SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-change-me-in-production')
@@ -85,18 +65,40 @@ SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-change-me-in-producti
 # Base URL de Wagtail para producción
 WAGTAILADMIN_BASE_URL = 'https://manualogos360.onrender.com'
 
-# Logging básico
+# Configuración de seguridad
+SECURE_BROWSER_XSS_FILTER = True
+SECURE_CONTENT_TYPE_NOSNIFF = True
+X_FRAME_OPTIONS = 'DENY'
+
+# Logging mejorado
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message}',
+            'style': '{',
+        },
+    },
     'handlers': {
         'console': {
             'class': 'logging.StreamHandler',
+            'formatter': 'verbose',
         },
     },
-    'root': {
-        'handlers': ['console'],
-        'level': 'INFO',
+    'loggers': {
+        'django': {
+            'handlers': ['console'],
+            'level': 'INFO',
+        },
+        'wagtail': {
+            'handlers': ['console'],
+            'level': 'INFO',
+        },
+        'django.staticfiles': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+        },
     },
 }
 
